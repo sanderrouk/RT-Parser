@@ -1,5 +1,3 @@
-import Authentication
-
 import Vapor
 import VaporExt
 

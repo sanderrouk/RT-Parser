@@ -13,41 +13,23 @@ let package = Package(
 
         // DB Engines
         .package(url: "https://github.com/vapor/fluent-sqlite.git", from: "3.0.0"),
-//        .package(url: "https://github.com/vapor/fluent-postgresql.git", from: "1.0.0"),
-//        .package(url: "https://github.com/vapor/fluent-mysql.git", from: "3.0.0"),
 
         // API Documentation
         .package(url: "https://github.com/mczachurski/Swiftgger.git", from: "1.2.1"),
-
-        // Localisation
-        .package(url: "https://github.com/miroslavkovac/Lingo.git", from: "3.0.0"),
-
-        // Templating engine
-        .package(url: "https://github.com/vapor/leaf.git", from: "3.0.2"),
-
-        // Auth
-        .package(url: "https://github.com/vapor/auth.git", from: "2.0.0")
     ],
     targets: [
         .target(name: "OpenApi", dependencies: [ "Vapor", "Swiftgger"]),
-        .target(name: "Data", dependencies: ["Vapor", "Authentication", "OpenApi", "FluentSQLite"]),
-        .target(name: "User", dependencies: ["Vapor", "FluentSQLite", "OpenApi", "Data"]),
-        .target(name: "Todo", dependencies: ["Vapor", "FluentSQLite", "OpenApi", "Data"]),
+        .target(name: "Data", dependencies: ["Vapor", "OpenApi", "FluentSQLite"]),
+        .target(name: "LawHierarchy", dependencies: ["Vapor", "Data", "FluentSQLite"]),
         .target(
             name: "App",
             dependencies: [
                 "OpenApi",
                 "Data",
-                "User",
-                "Todo",
+                "LawHierarchy",
                 "Vapor",
                 "VaporExt",
-                "FluentSQLite",
-                //            "FluentMySQL",
-                //            "FluentPostgreSQL",
-                "Lingo",
-                "Leaf",
-                "Authentication",
+                "FluentSQLite"
             ]
         ),
         .target(name: "Run", dependencies: ["App"]),
