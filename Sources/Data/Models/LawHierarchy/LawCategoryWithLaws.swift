@@ -1,4 +1,6 @@
-public struct LawCategoryWithLaws: Codable {
+import Vapor
+
+public struct LawCategoryWithLaws: Content {
 
     public var id: Int?
     public var title: String

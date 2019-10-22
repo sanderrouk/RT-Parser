@@ -3,12 +3,11 @@ import Data
 import FluentSQLite
 
 public protocol LawCategoryRepository: Service {
-
     func findAll() -> EventLoopFuture<[LawCategory]>
     func findAllWithLaws() -> EventLoopFuture<[LawCategoryWithLaws]>
 }
 
-final class LawCategoryRepositoryImpl: LawCategoryRepository {
+public final class LawCategoryRepositoryImpl: LawCategoryRepository {
 
     private let databaseConnection: SQLiteDatabase.ConnectionPool
 
@@ -16,11 +15,11 @@ final class LawCategoryRepositoryImpl: LawCategoryRepository {
         self.databaseConnection = databaseConnection
     }
 
-    func findAll() -> EventLoopFuture<[LawCategory]> {
+    public func findAll() -> EventLoopFuture<[LawCategory]> {
         return databaseConnection.withConnection { LawCategory.query(on: $0).all() }
     }
 
-    func findAllWithLaws() -> EventLoopFuture<[LawCategoryWithLaws]> {
+    public func findAllWithLaws() -> EventLoopFuture<[LawCategoryWithLaws]> {
         return databaseConnection.withConnection { connection in
             LawCategory
                 .query(on: connection)
@@ -39,7 +38,7 @@ final class LawCategoryRepositoryImpl: LawCategoryRepository {
 extension LawCategoryRepositoryImpl: ServiceType {
     public static let serviceSupports: [Any.Type] = [LawCategoryRepository.self]
 
-    static func makeService(for container: Container) throws -> Self {
+    public static func makeService(for container: Container) throws -> Self {
         let connectionPool = try container.connectionPool(to: .sqlite)
         return .init(databaseConnection: connectionPool)
     }
