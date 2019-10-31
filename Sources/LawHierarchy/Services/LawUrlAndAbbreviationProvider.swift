@@ -50,7 +50,6 @@ public final class LawUrlAndAbbreviationProviderImpl: LawUrlAndAbbreviationProvi
                 let abbreviation = tempLaw.abbreviation else { return nil }
 
             return Law(
-                id: nil,
                 title: name,
                 url: url,
                 abbreviation: abbreviation,

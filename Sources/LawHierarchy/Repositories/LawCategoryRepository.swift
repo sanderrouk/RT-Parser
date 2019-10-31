@@ -5,6 +5,8 @@ import FluentSQLite
 public protocol LawCategoryRepository: Service {
     func findAll() -> EventLoopFuture<[LawCategory]>
     func findAllWithLaws() -> EventLoopFuture<[LawCategoryWithLaws]>
+    func count() -> EventLoopFuture<Int>
+    func save(categories: [LawCategory]) -> EventLoopFuture<[LawCategory]>
 }
 
 public final class LawCategoryRepositoryImpl: LawCategoryRepository {
@@ -31,6 +33,16 @@ public final class LawCategoryRepositoryImpl: LawCategoryRepository {
                         on: connection
                     ) { return LawCategoryWithLaws(lawCategory: $0, laws: $1) }
             }
+        }
+    }
+
+    public func count() -> EventLoopFuture<Int> {
+        return databaseConnection.withConnection { LawCategory.query(on: $0).count() }
+    }
+
+    public func save(categories: [LawCategory]) -> EventLoopFuture<[LawCategory]> {
+        return databaseConnection.withConnection { connection in
+            categories.map { $0.save(on: connection) }.flatten(on: connection)
         }
     }
 }
