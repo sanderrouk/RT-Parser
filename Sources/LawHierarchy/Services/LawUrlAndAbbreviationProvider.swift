@@ -39,7 +39,7 @@ public final class LawUrlAndAbbreviationProviderImpl: LawUrlAndAbbreviationProvi
             row.css("td > a").enumerated().forEach { index, link in
                 if index == 0 {
                     tempLaw.name = link.text
-                    tempLaw.link = link["href"]
+                    tempLaw.link = "https://www.riigiteataja.ee/" + (link["href"] ?? "")
                 } else {
                     tempLaw.abbreviation = link.text
                 }
@@ -52,8 +52,7 @@ public final class LawUrlAndAbbreviationProviderImpl: LawUrlAndAbbreviationProvi
             return Law(
                 title: name,
                 url: url,
-                abbreviation: abbreviation,
-                lawCategoryId: -1
+                abbreviation: abbreviation
             )
         }
     }

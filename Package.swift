@@ -14,12 +14,14 @@ let package = Package(
         .target(name: "OpenApi", dependencies: [ "Vapor", "Swiftgger"]),
         .target(name: "Data", dependencies: ["Vapor", "OpenApi", "FluentSQLite"]),
         .target(name: "LawHierarchy", dependencies: ["Vapor", "Data", "FluentSQLite", "Kanna"]),
+        .target(name: "TimerJobs", dependencies: ["Vapor"]),
         .target(
             name: "App",
             dependencies: [
                 "OpenApi",
                 "Data",
                 "LawHierarchy",
+                "TimerJobs",
                 "Vapor",
                 "VaporExt",
                 "FluentSQLite",

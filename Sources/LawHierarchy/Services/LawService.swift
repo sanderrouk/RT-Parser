@@ -3,33 +3,31 @@ import Data
 
 public protocol LawService: Service {
     func findLaws() -> EventLoopFuture<[Law]>
-    func findCategoriesWithLaws() -> EventLoopFuture<[LawCategoryWithLaws]>
+    func updateLaws() -> EventLoopFuture<Void>
 }
 
 public final class LawServiceImpl: LawService {
     
     private let lawRepository: LawRepository
-    private let lawCategoryRepository: LawCategoryRepository
-    private let hierarchyBuilder: LawHierarchyBuilder
-    
+    private let lawUrlAndAbbreviationProvider: LawUrlAndAbbreviationProvider
+
     init(
         lawRepository: LawRepository,
-        lawCategoryRepository: LawCategoryRepository,
-        hierarchyBuilder: LawHierarchyBuilder
+        lawUrlAndAbbreviationProvider: LawUrlAndAbbreviationProvider
     ) {
         self.lawRepository = lawRepository
-        self.lawCategoryRepository = lawCategoryRepository
-        self.hierarchyBuilder = hierarchyBuilder
+        self.lawUrlAndAbbreviationProvider = lawUrlAndAbbreviationProvider
     }
     
     public func findLaws() -> EventLoopFuture<[Law]> {
-        return lawRepository.findAll().flatMap { [unowned self] in
-            return try self.hierarchyBuilder.buildHierarchy(for: $0)
-        }
+        return lawRepository.findAll()
     }
-    
-    public func findCategoriesWithLaws() -> EventLoopFuture<[LawCategoryWithLaws]> {
-        return lawCategoryRepository.findAllWithLaws()
+
+    public func updateLaws() -> EventLoopFuture<Void> {
+        return lawUrlAndAbbreviationProvider.fetchLaws()
+            .flatMap { [unowned self] laws in
+                self.lawRepository.save(laws: laws).transform(to: ())
+        }
     }
 }
 
@@ -38,13 +36,11 @@ extension LawServiceImpl: ServiceType {
 
     public static func makeService(for container: Container) throws -> Self {
         let lawRepository = try container.make(LawRepository.self)
-        let lawCategoryRepository = try container.make(LawCategoryRepository.self)
-        let hierarchyBuilder = try container.make(LawHierarchyBuilder.self)
+        let lawUrlAndAbbreviationProvider = try container.make(LawUrlAndAbbreviationProvider.self)
 
         return .init(
             lawRepository: lawRepository,
-            lawCategoryRepository: lawCategoryRepository,
-            hierarchyBuilder: hierarchyBuilder
+            lawUrlAndAbbreviationProvider: lawUrlAndAbbreviationProvider
         )
     }
 }

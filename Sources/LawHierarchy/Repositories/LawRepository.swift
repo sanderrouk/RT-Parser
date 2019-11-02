@@ -21,8 +21,13 @@ public final class LawRepositoryImpl: LawRepository {
 
     public func save(laws: [Law]) -> EventLoopFuture<[Law]> {
         return databaseConnection.withConnection { connection in
-            laws.map { $0.save(on: connection)}.flatten(on: connection)
+            laws.map { self.createOrUpdate($0, connection: connection) }.flatten(on: connection)
         }
+    }
+
+    private func createOrUpdate<T: _SQLiteModel>(_ model: T, connection: SQLiteConnection) -> EventLoopFuture<T> {
+        return model.create(on: connection)
+            .catchFlatMap { _ in model.update(on: connection) }
     }
 }
 

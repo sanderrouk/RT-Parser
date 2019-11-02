@@ -1,25 +1,22 @@
 import FluentSQLite
 import Vapor
 
-public final class Law: SQLiteModel, Content {
+public final class Law: SQLiteStringModel, Content {
 
-    public var id: Int?
+    public var id: String?
     public var title: String
     public var url: String
     public var abbreviation: String
-    public var lawCategoryId: Int
 
     public init(
         title: String,
         url: String,
-        abbreviation: String,
-        lawCategoryId: Int
+        abbreviation: String
     ) {
-        self.id = nil
+        self.id = abbreviation
         self.title = title
         self.url = url
         self.abbreviation = abbreviation
-        self.lawCategoryId = lawCategoryId
     }
 }
 
@@ -29,10 +26,7 @@ extension Law: Migration {
             builder.field(for: \.id, isIdentifier: true)
             builder.field(for: \.title, type: .text)
             builder.field(for: \.url, type: .text)
-            builder.field(for: \.abbreviation, type: .text)
-            builder.field(for: \.lawCategoryId)
-
-            builder.reference(from: \.lawCategoryId, to: \LawCategory.id)
+            builder.field(for: \.abbreviation, type: .text, .unique())
         }
     }
 }
