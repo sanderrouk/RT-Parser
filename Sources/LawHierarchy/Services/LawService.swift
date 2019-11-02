@@ -3,25 +3,31 @@ import Data
 
 public protocol LawService: Service {
     func findLaws() -> EventLoopFuture<[Law]>
-    func findCategoriesWithLaws() -> EventLoopFuture<[LawCategoryWithLaws]>
+    func updateLaws() -> EventLoopFuture<Void>
 }
 
 public final class LawServiceImpl: LawService {
     
     private let lawRepository: LawRepository
-    private let lawCategoryRepository: LawCategoryRepository
-    
-    init(lawRepository: LawRepository, lawCategoryRepository: LawCategoryRepository) {
+    private let lawUrlAndAbbreviationProvider: LawUrlAndAbbreviationProvider
+
+    init(
+        lawRepository: LawRepository,
+        lawUrlAndAbbreviationProvider: LawUrlAndAbbreviationProvider
+    ) {
         self.lawRepository = lawRepository
-        self.lawCategoryRepository = lawCategoryRepository
+        self.lawUrlAndAbbreviationProvider = lawUrlAndAbbreviationProvider
     }
     
     public func findLaws() -> EventLoopFuture<[Law]> {
         return lawRepository.findAll()
     }
-    
-    public func findCategoriesWithLaws() -> EventLoopFuture<[LawCategoryWithLaws]> {
-        return lawCategoryRepository.findAllWithLaws()
+
+    public func updateLaws() -> EventLoopFuture<Void> {
+        return lawUrlAndAbbreviationProvider.fetchLaws()
+            .flatMap { [unowned self] laws in
+                self.lawRepository.save(laws: laws).transform(to: ())
+        }
     }
 }
 
@@ -30,8 +36,11 @@ extension LawServiceImpl: ServiceType {
 
     public static func makeService(for container: Container) throws -> Self {
         let lawRepository = try container.make(LawRepository.self)
-        let lawCategoryRepository = try container.make(LawCategoryRepository.self)
+        let lawUrlAndAbbreviationProvider = try container.make(LawUrlAndAbbreviationProvider.self)
 
-        return .init(lawRepository: lawRepository, lawCategoryRepository: lawCategoryRepository)
+        return .init(
+            lawRepository: lawRepository,
+            lawUrlAndAbbreviationProvider: lawUrlAndAbbreviationProvider
+        )
     }
 }
