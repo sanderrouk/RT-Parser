@@ -15,7 +15,11 @@ public func routes(_ router: Router, _ container: Container) throws {
     let lawController = LawController(lawService: lawService, group: v1RouteGroup)
 
     // Law Parser
-    let lawParserController = LawParserController(group: v1RouteGroup)
+    let lawParsingService = try container.make(LawParsingService.self)
+    let lawParserController = LawParserController(
+        lawParsingService: lawParsingService,
+        group: v1RouteGroup
+    )
 
     let controllers: [RouteCollection] = [
         ApiSpecController(group: emptyRouteGroup),
