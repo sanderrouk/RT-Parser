@@ -19,7 +19,7 @@ public final class LawParserController: RouteCollection {
         routeGroup.get("/parse-law", use: parseLaw)
     }
 
-    public func parseLaw(request: Request) throws -> EventLoopFuture<[LawSubpoint]> {
+    public func parseLaw(request: Request) throws -> EventLoopFuture<[LawSection]> {
         return lawParsingService.parseBy(abbrevation: "TODO")
     }
 }
