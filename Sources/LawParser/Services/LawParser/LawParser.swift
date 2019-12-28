@@ -9,10 +9,12 @@ final class LawParser: NSObject, XMLParserDelegate {
 
     private var elementStack = [LawElements]()
     private var inElement = LawElements.none
+
     private var subpointParsingContainer: SubpointParsingContainer?
     private var sectionParsingContainer: SectionParsingContainer?
+    private var paragraphParsingContainer: ParagraphParsingContainer?
 
-    private var sections = [LawSection]()
+    private var paragraphs = [LawParagraph]()
 
     private var inSection: Bool {
         return sectionParsingContainer != nil
@@ -20,6 +22,10 @@ final class LawParser: NSObject, XMLParserDelegate {
 
     private var inSubpoint: Bool {
         return subpointParsingContainer != nil
+    }
+
+    private var inParagraph: Bool {
+        return paragraphParsingContainer != nil
     }
 
     private enum Superscripts: String {
@@ -37,13 +43,14 @@ final class LawParser: NSObject, XMLParserDelegate {
 
     private enum Attributes: String {
         case id
+        case ylaIndeks
     }
 
-    func parse(rawXml: Data) throws -> [LawSection] {
+    func parse(rawXml: Data) throws -> [LawParagraph] {
         let xmlParser = XMLParser(data: rawXml)
         xmlParser.delegate = self
         guard xmlParser.parse() else { throw Error.parsingFailed }
-        return sections
+        return paragraphs
     }
 
     func parser(
@@ -65,6 +72,13 @@ final class LawParser: NSObject, XMLParserDelegate {
 
         case .loige:
             sectionParsingContainer = SectionParsingContainer()
+            handleAttributes(attributeDict)
+
+        case .paragrahv:
+            paragraphParsingContainer = ParagraphParsingContainer()
+            handleAttributes(attributeDict)
+
+        case .paragrahvNr:
             handleAttributes(attributeDict)
 
         default: break
@@ -98,6 +112,12 @@ final class LawParser: NSObject, XMLParserDelegate {
 
         case .kuvatavtekst where inSection:
             sectionParsingContainer?.content += stripCDATA(from: string)
+
+        // Paragraph
+        case .paragrahvNr where inParagraph:
+            paragraphParsingContainer?.number = Int(string)
+        case .paragrahvPealkiri where inParagraph:
+            paragraphParsingContainer?.title += string
 
         default:
             break
@@ -139,8 +159,23 @@ final class LawParser: NSObject, XMLParserDelegate {
                 subpoints: container.subpoints.isEmpty ? nil : container.subpoints
             )
 
-            sections.append(section)
+            paragraphParsingContainer?.sections.append(section)
             sectionParsingContainer = nil
+
+        case .paragrahv where inParagraph:
+            let container = paragraphParsingContainer!
+            guard let number = container.number else { return }
+
+            let paragraph = LawParagraph(
+                id: container.id,
+                index: container.index,
+                number: number,
+                title: container.title,
+                sections: container.sections
+            )
+
+            paragraphs.append(paragraph)
+            paragraphParsingContainer = nil
 
         default:
             break
@@ -159,6 +194,14 @@ final class LawParser: NSObject, XMLParserDelegate {
             guard let id = attributes[Attributes.id.rawValue] else { return }
             sectionParsingContainer?.id = id
 
+        case .paragrahv:
+            guard let id = attributes[Attributes.id.rawValue] else { return }
+            paragraphParsingContainer?.id = id
+
+        case .paragrahvNr:
+            guard let index = attributes[Attributes.ylaIndeks.rawValue] else { return }
+            paragraphParsingContainer?.index = convertToSuperscript(from: index)
+
         default:
             break
         }
@@ -166,5 +209,19 @@ final class LawParser: NSObject, XMLParserDelegate {
 
     private func stripCDATA(from string: String) -> String {
         return string.replacingOccurrences(of: "<!\\[CDATA\\[|\\]\\]>", with: "", options: [.regularExpression])
+    }
+
+    private func convertToSuperscript(from string: String) -> String {
+        return string
+            .replacingOccurrences(of: "0", with: Superscripts.zero.rawValue)
+            .replacingOccurrences(of: "1", with: Superscripts.one.rawValue)
+            .replacingOccurrences(of: "2", with: Superscripts.two.rawValue)
+            .replacingOccurrences(of: "3", with: Superscripts.three.rawValue)
+            .replacingOccurrences(of: "4", with: Superscripts.four.rawValue)
+            .replacingOccurrences(of: "5", with: Superscripts.five.rawValue)
+            .replacingOccurrences(of: "6", with: Superscripts.six.rawValue)
+            .replacingOccurrences(of: "7", with: Superscripts.seven.rawValue)
+            .replacingOccurrences(of: "8", with: Superscripts.eight.rawValue)
+            .replacingOccurrences(of: "9", with: Superscripts.nine.rawValue)
     }
 }

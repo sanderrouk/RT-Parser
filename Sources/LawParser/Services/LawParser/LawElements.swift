@@ -6,6 +6,9 @@ enum LawElements: String {
     case loige
     case loigeNr
     case kuvatavtekst
+    case paragrahv
+    case paragrahvNr
+    case paragrahvPealkiri
     case none
 }
 
@@ -26,6 +29,12 @@ extension LawElements: RawRepresentable {
             self = .loige
         case "loigeNr":
             self = .loigeNr
+        case "paragrahv":
+            self = .paragrahv
+        case "paragrahvNr":
+            self = .paragrahvNr
+        case "paragrahvPealkiri":
+            self = .paragrahvPealkiri
         default:
             return nil
         }

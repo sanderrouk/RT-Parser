@@ -1,7 +1,7 @@
 import Vapor
 
 public protocol LawParsingService: Service {
-    func parseBy(abbrevation: String) -> EventLoopFuture<[LawSection]>
+    func parseBy(abbrevation: String) -> EventLoopFuture<[LawParagraph]>
 }
 
 public final class LawParsingServiceImpl: LawParsingService {
@@ -14,9 +14,9 @@ public final class LawParsingServiceImpl: LawParsingService {
         self.eventLoop = eventLoop
     }
 
-    public func parseBy(abbrevation: String) -> EventLoopFuture<[LawSection]> {
+    public func parseBy(abbrevation: String) -> EventLoopFuture<[LawParagraph]> {
         let data = TempData.rawXml
-        let promise = eventLoop.newPromise([LawSection].self)
+        let promise = eventLoop.newPromise([LawParagraph].self)
         do {
             let sections = try lawParser.parse(rawXml: data)
             promise.succeed(result: sections)
