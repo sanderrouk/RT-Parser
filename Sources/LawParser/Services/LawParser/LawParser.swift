@@ -70,8 +70,14 @@ final class LawParser: NSObject, XMLParserDelegate {
             subpointParsingContainer = SubpointParsingContainer()
             handleAttributes(attributeDict)
 
+        case .alampunktNr:
+            handleAttributes(attributeDict)
+
         case .loige:
             sectionParsingContainer = SectionParsingContainer()
+            handleAttributes(attributeDict)
+
+        case .loigeNr:
             handleAttributes(attributeDict)
 
         case .paragrahv:
@@ -143,6 +149,7 @@ final class LawParser: NSObject, XMLParserDelegate {
             let subpoint = LawSubpoint(
                 id: container.id,
                 number: number,
+                index: container.index,
                 content: container.content
             )
 
@@ -155,6 +162,7 @@ final class LawParser: NSObject, XMLParserDelegate {
             let section = LawSection(
                 id: container.id,
                 number: container.number,
+                index: container.index,
                 content: container.content,
                 subpoints: container.subpoints.isEmpty ? nil : container.subpoints
             )
@@ -190,9 +198,17 @@ final class LawParser: NSObject, XMLParserDelegate {
             guard let id = attributes[Attributes.id.rawValue] else { return }
             subpointParsingContainer?.id = id
 
+        case .alampunktNr:
+            guard let index = attributes[Attributes.ylaIndeks.rawValue] else { return }
+            subpointParsingContainer?.index = convertToSuperscript(from: index)
+
         case .loige:
             guard let id = attributes[Attributes.id.rawValue] else { return }
             sectionParsingContainer?.id = id
+
+        case .loigeNr:
+            guard let index = attributes[Attributes.ylaIndeks.rawValue] else { return }
+            sectionParsingContainer?.index = convertToSuperscript(from: index)
 
         case .paragrahv:
             guard let id = attributes[Attributes.id.rawValue] else { return }
