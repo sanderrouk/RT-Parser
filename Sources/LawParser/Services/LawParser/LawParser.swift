@@ -13,8 +13,9 @@ final class LawParser: NSObject, XMLParserDelegate {
     private var subpointParsingContainer: SubpointParsingContainer?
     private var sectionParsingContainer: SectionParsingContainer?
     private var paragraphParsingContainer: ParagraphParsingContainer?
+    private var chapterParsingContainer: ChapterParsingContainer?
 
-    private var paragraphs = [LawParagraph]()
+    private var chapters = [LawChapter]()
 
     private var inSection: Bool {
         return sectionParsingContainer != nil
@@ -26,6 +27,10 @@ final class LawParser: NSObject, XMLParserDelegate {
 
     private var inParagraph: Bool {
         return paragraphParsingContainer != nil
+    }
+
+    private var inChapter: Bool {
+        return chapterParsingContainer != nil
     }
 
     private enum Superscripts: String {
@@ -46,11 +51,11 @@ final class LawParser: NSObject, XMLParserDelegate {
         case ylaIndeks
     }
 
-    func parse(rawXml: Data) throws -> [LawParagraph] {
+    func parse(rawXml: Data) throws -> [LawChapter] {
         let xmlParser = XMLParser(data: rawXml)
         xmlParser.delegate = self
         guard xmlParser.parse() else { throw Error.parsingFailed }
-        return paragraphs
+        return chapters
     }
 
     func parser(
@@ -85,6 +90,10 @@ final class LawParser: NSObject, XMLParserDelegate {
             handleAttributes(attributeDict)
 
         case .paragrahvNr:
+            handleAttributes(attributeDict)
+
+        case .peatykk:
+            chapterParsingContainer = ChapterParsingContainer()
             handleAttributes(attributeDict)
 
         default: break
@@ -124,6 +133,18 @@ final class LawParser: NSObject, XMLParserDelegate {
             paragraphParsingContainer?.number = Int(string)
         case .paragrahvPealkiri where inParagraph:
             paragraphParsingContainer?.title += string
+        case .sisutekst where inParagraph,
+             .tavatekst where inParagraph,
+             .kuvatavtekst where inParagraph:
+            let content = paragraphParsingContainer?.content ?? ""
+            paragraphParsingContainer?.content = content + stripCDATA(from: string)
+
+        // Chapter
+        case .peatykkNr where inChapter:
+            chapterParsingContainer?.number = Int(string)
+        case .peatykkPealkiri where inChapter:
+            chapterParsingContainer?.title += string
+
 
         default:
             break
@@ -142,6 +163,7 @@ final class LawParser: NSObject, XMLParserDelegate {
 
         switch element {
 
+        // Subpoint
         case .alampunkt where inSubpoint:
             let container = subpointParsingContainer!
             guard let number = container.number else { return }
@@ -156,6 +178,7 @@ final class LawParser: NSObject, XMLParserDelegate {
             sectionParsingContainer?.subpoints.append(subpoint)
             subpointParsingContainer = nil
 
+        // Section
         case .loige where inSection:
             let container = sectionParsingContainer!
 
@@ -170,6 +193,7 @@ final class LawParser: NSObject, XMLParserDelegate {
             paragraphParsingContainer?.sections.append(section)
             sectionParsingContainer = nil
 
+        // Paragraph
         case .paragrahv where inParagraph:
             let container = paragraphParsingContainer!
             guard let number = container.number else { return }
@@ -179,16 +203,31 @@ final class LawParser: NSObject, XMLParserDelegate {
                 index: container.index,
                 number: number,
                 title: container.title,
-                sections: container.sections
+                sections: container.sections.isEmpty ? nil : container.sections,
+                content: container.content
             )
 
-            paragraphs.append(paragraph)
+            chapterParsingContainer?.paragraphs.append(paragraph)
             paragraphParsingContainer = nil
+
+        // Chapter
+        case .peatykk where inChapter:
+            let container = chapterParsingContainer!
+            guard let number = container.number else { return }
+
+            let chapter = LawChapter(
+                id: container.id,
+                number: number,
+                title: container.title,
+                paragraphs: container.paragraphs
+            )
+
+            chapters.append(chapter)
+            chapterParsingContainer = nil
 
         default:
             break
         }
-
     }
 
     private func handleAttributes(_ attributes: [String: String]) {
@@ -217,6 +256,10 @@ final class LawParser: NSObject, XMLParserDelegate {
         case .paragrahvNr:
             guard let index = attributes[Attributes.ylaIndeks.rawValue] else { return }
             paragraphParsingContainer?.index = convertToSuperscript(from: index)
+
+        case .peatykk:
+            guard let id = attributes[Attributes.id.rawValue] else { return }
+            chapterParsingContainer?.id = id
 
         default:
             break
