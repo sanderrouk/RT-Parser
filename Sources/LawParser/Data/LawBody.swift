@@ -1,6 +1,7 @@
-struct LawBody: Codable {
-    let abbreviation: String
-    let name: String
+import Vapor
+
+public struct LawBody: Content {
+    let title: String
     let meta: LawMeta
     let chapters: [LawChapter]
 }

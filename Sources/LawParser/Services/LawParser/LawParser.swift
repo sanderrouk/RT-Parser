@@ -10,19 +10,21 @@ final class LawParser: NSObject, XMLParserDelegate {
     private var elementStack = [LawElements]()
     private var inElement = LawElements.none
 
+    private var legislation: LawBody?
+
     private var subpointParsingContainer: SubpointParsingContainer?
     private var sectionParsingContainer: SectionParsingContainer?
     private var paragraphParsingContainer: ParagraphParsingContainer?
     private var chapterParsingContainer: ChapterParsingContainer?
-
-    private var chapters = [LawChapter]()
-
-    private var inSection: Bool {
-        return sectionParsingContainer != nil
-    }
+    private var metaParsingContainer: MetaParsingContainer?
+    private var bodyParsingContainer: BodyParsingContainer?
 
     private var inSubpoint: Bool {
         return subpointParsingContainer != nil
+    }
+
+    private var inSection: Bool {
+        return sectionParsingContainer != nil
     }
 
     private var inParagraph: Bool {
@@ -31,6 +33,14 @@ final class LawParser: NSObject, XMLParserDelegate {
 
     private var inChapter: Bool {
         return chapterParsingContainer != nil
+    }
+
+    private var inMeta: Bool {
+        return metaParsingContainer != nil
+    }
+
+    private var inBody: Bool {
+        return bodyParsingContainer != nil
     }
 
     private enum Superscripts: String {
@@ -51,11 +61,15 @@ final class LawParser: NSObject, XMLParserDelegate {
         case ylaIndeks
     }
 
-    func parse(rawXml: Data) throws -> [LawChapter] {
+    func parse(rawXml: Data) throws -> LawBody {
         let xmlParser = XMLParser(data: rawXml)
         xmlParser.delegate = self
-        guard xmlParser.parse() else { throw Error.parsingFailed }
-        return chapters
+        guard xmlParser.parse(),
+            let legislation = legislation
+            else { throw Error.parsingFailed }
+
+        self.legislation = nil
+        return legislation
     }
 
     func parser(
@@ -95,6 +109,12 @@ final class LawParser: NSObject, XMLParserDelegate {
         case .peatykk:
             chapterParsingContainer = ChapterParsingContainer()
             handleAttributes(attributeDict)
+
+        case .metadata:
+            metaParsingContainer = MetaParsingContainer()
+
+        case .legislation:
+            bodyParsingContainer = BodyParsingContainer()
 
         default: break
         }
@@ -145,6 +165,29 @@ final class LawParser: NSObject, XMLParserDelegate {
         case .peatykkPealkiri where inChapter:
             chapterParsingContainer?.title += string
 
+        // Metadata
+        case .issuer where inMeta:
+            metaParsingContainer?.issuer += string
+        case .actType where inMeta:
+            metaParsingContainer?.actType += string
+        case .textType where inMeta:
+            metaParsingContainer?.textType += string
+        case .abbreviation where inMeta:
+            metaParsingContainer?.abbreviation += string
+        case .entryIntoForce where inMeta:
+            metaParsingContainer?.entryIntoForce += string
+        case .inForceFrom where inMeta:
+            metaParsingContainer?.inForceFrom += string
+        case .inForceUntil where inMeta:
+            metaParsingContainer?.inForceUntil += string
+        case .published where inMeta:
+            metaParsingContainer?.published += string
+        case .passed where inMeta:
+            metaParsingContainer?.passed += string
+
+        // Body
+        case .title where inBody:
+            bodyParsingContainer?.title += string
 
         default:
             break
@@ -222,8 +265,40 @@ final class LawParser: NSObject, XMLParserDelegate {
                 paragraphs: container.paragraphs
             )
 
-            chapters.append(chapter)
+            bodyParsingContainer?.chapters.append(chapter)
             chapterParsingContainer = nil
+
+        // Metadata
+        case .metadata where inMeta:
+            let container = metaParsingContainer!
+
+            let metadata = LawMeta(
+                passed: container.passed,
+                published: container.published,
+                inForceFrom: container.inForceFrom,
+                inForceUntil: container.inForceUntil,
+                entryIntoForce: container.entryIntoForce,
+                abbreviation: container.abbreviation,
+                textType: container.textType,
+                actType: container.actType,
+                issuer: container.issuer
+            )
+
+            bodyParsingContainer?.meta = metadata
+            metaParsingContainer = nil
+
+        case .legislation where inBody:
+            let container = bodyParsingContainer!
+            guard let metadata = container.meta else { return }
+
+            let lawBody = LawBody(
+                title: container.title,
+                meta: metadata,
+                chapters: container.chapters
+            )
+
+            legislation = lawBody
+            bodyParsingContainer = nil
 
         default:
             break
