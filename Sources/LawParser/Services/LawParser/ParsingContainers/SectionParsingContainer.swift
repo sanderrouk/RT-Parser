@@ -1,7 +1,8 @@
 struct SectionParsingContainer {
     var id = ""
     var number: Int?
-    var index: String?
+    var index: Int?
     var content = ""
     var subpoints = [LawSubpoint]()
+    var displayableNumber: String?
 }

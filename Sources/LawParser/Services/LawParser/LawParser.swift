@@ -215,7 +215,8 @@ final class LawParser: NSObject, XMLParserDelegate {
                 id: container.id,
                 number: number,
                 index: container.index,
-                content: container.content
+                content: container.content,
+                displayableNumber: composeDisplayableNumber(from: number, and: container.index)
             )
 
             sectionParsingContainer?.subpoints.append(subpoint)
@@ -224,13 +225,17 @@ final class LawParser: NSObject, XMLParserDelegate {
         // Section
         case .section where inSection:
             let container = sectionParsingContainer!
+            let displayableNumber = container.number == nil
+                ? nil
+                : composeDisplayableNumber(from: container.number!, and: container.index)
 
             let section = LawSection(
                 id: container.id,
                 number: container.number,
                 index: container.index,
                 content: container.content,
-                subpoints: container.subpoints.isEmpty ? nil : container.subpoints
+                subpoints: container.subpoints.isEmpty ? nil : container.subpoints,
+                displayableNumber: displayableNumber
             )
 
             paragraphParsingContainer?.sections.append(section)
@@ -247,7 +252,8 @@ final class LawParser: NSObject, XMLParserDelegate {
                 number: number,
                 title: container.title,
                 sections: container.sections.isEmpty ? nil : container.sections,
-                content: container.content
+                content: container.content,
+                displayableNumber: composeDisplayableNumber(from: number, and: container.index)
             )
 
             chapterParsingContainer?.paragraphs.append(paragraph)
@@ -262,7 +268,8 @@ final class LawParser: NSObject, XMLParserDelegate {
                 id: container.id,
                 number: number,
                 title: container.title,
-                paragraphs: container.paragraphs
+                paragraphs: container.paragraphs,
+                displayableNumber: composeDisplayableNumber(from: number, and: nil)
             )
 
             bodyParsingContainer?.chapters.append(chapter)
@@ -314,7 +321,7 @@ final class LawParser: NSObject, XMLParserDelegate {
 
         case .subpointNumber:
             guard let index = attributes[Attributes.ylaIndeks.rawValue] else { return }
-            subpointParsingContainer?.index = convertToSuperscript(from: index)
+            subpointParsingContainer?.index = Int(index)
 
         case .section:
             guard let id = attributes[Attributes.id.rawValue] else { return }
@@ -322,7 +329,7 @@ final class LawParser: NSObject, XMLParserDelegate {
 
         case .sectionNumber:
             guard let index = attributes[Attributes.ylaIndeks.rawValue] else { return }
-            sectionParsingContainer?.index = convertToSuperscript(from: index)
+            sectionParsingContainer?.index = Int(index)
 
         case .paragraph:
             guard let id = attributes[Attributes.id.rawValue] else { return }
@@ -330,7 +337,7 @@ final class LawParser: NSObject, XMLParserDelegate {
 
         case .paragraphNumber:
             guard let index = attributes[Attributes.ylaIndeks.rawValue] else { return }
-            paragraphParsingContainer?.index = convertToSuperscript(from: index)
+            paragraphParsingContainer?.index = Int(index)
 
         case .chapter:
             guard let id = attributes[Attributes.id.rawValue] else { return }
@@ -345,8 +352,16 @@ final class LawParser: NSObject, XMLParserDelegate {
         return string.replacingOccurrences(of: "<!\\[CDATA\\[|\\]\\]>", with: "", options: [.regularExpression])
     }
 
-    private func convertToSuperscript(from string: String) -> String {
-        return string
+    private func composeDisplayableNumber(from number: Int, and index: Int?) -> String {
+        if let index = index {
+            return String(number) + convertToSuperscript(from: index)
+        }
+
+        return String(number)
+    }
+
+    private func convertToSuperscript(from int: Int) -> String {
+        return String(int)
             .replacingOccurrences(of: "0", with: Superscripts.zero.rawValue)
             .replacingOccurrences(of: "1", with: Superscripts.one.rawValue)
             .replacingOccurrences(of: "2", with: Superscripts.two.rawValue)

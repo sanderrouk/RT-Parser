@@ -3,4 +3,5 @@ struct ChapterParsingContainer {
     var number: Int?
     var title = ""
     var paragraphs = [LawParagraph]()
+    var displayableNumber: String?
 }

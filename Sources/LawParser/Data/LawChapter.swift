@@ -5,4 +5,5 @@ public struct LawChapter: Content {
     let number: Int
     let title: String
     let paragraphs: [LawParagraph]
+    let displayableNumber: String
 }

@@ -2,5 +2,6 @@ struct SubpointParsingContainer {
     var content = ""
     var id = ""
     var number: Int?
-    var index: String?
+    var index: Int?
+    var displayableNumber: String?
 }
