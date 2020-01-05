@@ -3,9 +3,14 @@ import Data
 
 public final class LawParserController: RouteCollection {
 
+    private let lawParsingService: LawParsingService
     private let group: [PathComponentsRepresentable]
 
-    public init(group: PathComponentsRepresentable...) {
+    public init(
+        lawParsingService: LawParsingService,
+        group: PathComponentsRepresentable...
+    ) {
+        self.lawParsingService = lawParsingService
         self.group = group
     }
 
@@ -14,10 +19,8 @@ public final class LawParserController: RouteCollection {
         routeGroup.get("/parse-law", use: parseLaw)
     }
 
-    public func parseLaw(request: Request) throws -> EventLoopFuture<String> {
-        let future = request.eventLoop.newPromise(of: String.self)
-        future.succeed(result: "Hello")
-        return future.futureResult
+    public func parseLaw(request: Request) throws -> EventLoopFuture<LawBody> {
+        return lawParsingService.parseBy(abbrevation: "TODO")
     }
 }
 
