@@ -1,6 +1,6 @@
 import Vapor
 
-struct LawSubpoint: Codable {
+struct LawSubpoint: Content {
     let id: String
     let number: Int?
     let index: String?

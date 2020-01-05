@@ -1,17 +1,17 @@
 enum LawElements: String {
-    case alampunkt
-    case alampunktNr
-    case sisutekst
-    case tavatekst
-    case loige
-    case loigeNr
-    case kuvatavtekst
-    case paragrahv
-    case paragrahvNr
-    case paragrahvPealkiri
-    case peatykk
-    case peatykkNr
-    case peatykkPealkiri
+    case subpoint
+    case subpointNumber
+    case contentText
+    case regularText
+    case section
+    case sectionNumber
+    case displayedText
+    case paragraph
+    case paragraphNumber
+    case paragraphTitle
+    case chapter
+    case chapterNumber
+    case chapterTitle
     case metadata
     case issuer
     case actType
@@ -31,31 +31,31 @@ extension LawElements: RawRepresentable {
     init?(rawValue: String) {
         switch rawValue {
         case "alampunkt":
-            self = .alampunkt
+            self = .subpoint
         case "alampunktNr":
-            self = .alampunktNr
+            self = .subpointNumber
         case "sisutekst", "sisuTekst", "SisuTekst":
-            self = .sisutekst
+            self = .contentText
         case "tavatekst", "tavaTekst", "TavaTekst":
-            self = .tavatekst
+            self = .regularText
         case "kuvatavtekst", "kuvatavTekst", "KuvatavTekst":
-            self = .kuvatavtekst
+            self = .displayedText
         case "loige":
-            self = .loige
+            self = .section
         case "loigeNr":
-            self = .loigeNr
+            self = .sectionNumber
         case "paragrahv":
-            self = .paragrahv
+            self = .paragraph
         case "paragrahvNr":
-            self = .paragrahvNr
+            self = .paragraphNumber
         case "paragrahvPealkiri":
-            self = .paragrahvPealkiri
+            self = .paragraphTitle
         case "peatykk":
-            self = .peatykk
+            self = .chapter
         case "peatykkNr":
-            self = .peatykkNr
+            self = .chapterNumber
         case "peatykkPealkiri":
-            self = .peatykkPealkiri
+            self = .chapterTitle
         case "metaandmed":
             self = .metadata
         case "valjaandja":
