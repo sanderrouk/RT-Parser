@@ -14,7 +14,7 @@ let package = Package(
         .target(name: "OpenApi", dependencies: [ "Vapor", "Swiftgger"]),
         .target(name: "Data", dependencies: ["Vapor", "OpenApi", "FluentSQLite"]),
         .target(name: "LawHierarchy", dependencies: ["Vapor", "Data", "FluentSQLite", "Kanna"]),
-        .target(name: "LawParser", dependencies: ["Vapor", "Data", "FluentSQLite"]),
+        .target(name: "LawParser", dependencies: ["Vapor", "Data", "FluentSQLite", "LawHierarchy"]),
         .target(name: "TimerJobs", dependencies: ["Vapor"]),
         .target(
             name: "App",

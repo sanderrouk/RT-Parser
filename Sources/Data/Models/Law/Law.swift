@@ -7,16 +7,19 @@ public final class Law: SQLiteStringModel, Content {
     public var title: String
     public var url: String
     public var abbreviation: String
+    public var body: LawBody?
 
     public init(
         title: String,
         url: String,
-        abbreviation: String
+        abbreviation: String,
+        body: LawBody?
     ) {
         self.id = abbreviation
         self.title = title
         self.url = url
         self.abbreviation = abbreviation
+        self.body = body
     }
 }
 

@@ -1,5 +1,5 @@
-import Vapor
 import Data
+import Vapor
 
 public final class LawParserController: RouteCollection {
 
@@ -16,11 +16,11 @@ public final class LawParserController: RouteCollection {
 
     public func boot(router: Router) throws {
         let routeGroup = router.grouped(group)
-        routeGroup.get("/parse-law", use: parseLaw)
+        routeGroup.get(["/parse-law", String.parameter], use: parseLaw)
     }
 
-    public func parseLaw(request: Request) throws -> EventLoopFuture<LawBody> {
-        return lawParsingService.parseBy(abbrevation: "TODO")
+    public func parseLaw(_ request: Request) throws -> EventLoopFuture<LawBody> {
+        let abbreviation = try request.parameters.next(String.self)
+        return lawParsingService.parseBy(abbreviation: abbreviation)
     }
 }
-
