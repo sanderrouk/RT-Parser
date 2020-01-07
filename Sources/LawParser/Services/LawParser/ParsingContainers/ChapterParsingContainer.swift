@@ -1,3 +1,5 @@
+import Data
+
 struct ChapterParsingContainer {
     var id = ""
     var number: Int?

@@ -1,3 +1,4 @@
+import Data
 import Foundation
 
 final class LawParser: NSObject, XMLParserDelegate {

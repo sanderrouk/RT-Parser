@@ -52,7 +52,8 @@ public final class LawUrlAndAbbreviationProviderImpl: LawUrlAndAbbreviationProvi
             return Law(
                 title: name,
                 url: url,
-                abbreviation: abbreviation
+                abbreviation: abbreviation,
+                body: nil
             )
         }
     }

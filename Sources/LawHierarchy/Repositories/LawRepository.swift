@@ -3,6 +3,7 @@ import Data
 import FluentSQLite
 
 public protocol LawRepository: Service {
+    func find(by abbreviation: String) -> EventLoopFuture<Law?>
     func findAll() -> EventLoopFuture<[Law]>
     func save(laws: [Law]) -> EventLoopFuture<[Law]>
 }
@@ -13,6 +14,12 @@ public final class LawRepositoryImpl: LawRepository {
 
     required init(databaseConnection:  SQLiteDatabase.ConnectionPool) {
         self.databaseConnection = databaseConnection
+    }
+
+    public func find(by abbreviation: String) -> EventLoopFuture<Law?> {
+        return databaseConnection.withConnection {
+            Law.query(on: $0).filter(\.abbreviation == abbreviation).first()
+        }
     }
 
     public func findAll() -> EventLoopFuture<[Law]> {

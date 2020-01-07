@@ -4,10 +4,11 @@ import Data
 public protocol LawService: Service {
     func findLaws() -> EventLoopFuture<[Law]>
     func updateLaws() -> EventLoopFuture<Void>
+    func findLaw(by abbreviation: String) -> EventLoopFuture<Law>
 }
 
 public final class LawServiceImpl: LawService {
-    
+
     private let lawRepository: LawRepository
     private let lawUrlAndAbbreviationProvider: LawUrlAndAbbreviationProvider
 
@@ -28,6 +29,14 @@ public final class LawServiceImpl: LawService {
             .flatMap { [unowned self] laws in
                 self.lawRepository.save(laws: laws).transform(to: ())
         }
+    }
+
+    public func findLaw(by abbreviation: String) -> EventLoopFuture<Law> {
+        return lawRepository.find(by: abbreviation)
+            .map({
+                guard let law = $0 else { throw Abort(.notFound) }
+                return law
+            })
     }
 }
 
