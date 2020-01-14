@@ -1,11 +1,11 @@
 #if os(Linux)
 
 import XCTest
-@testable import AppTests
+@testable import LawParserTests
 
 XCTMain([
     // AppTests
-    testCase(AppTests.allTests)
+    testCase(LawParserTests.allTests)
 ])
 
 #endif

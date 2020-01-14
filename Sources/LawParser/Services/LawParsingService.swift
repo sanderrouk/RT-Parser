@@ -38,7 +38,7 @@ public final class LawParsingServiceImpl: LawParsingService {
         return futureData.map { [unowned self] data in
             do {
                 return try self.lawParser.parse(rawXml: data)
-            } catch let error {
+            } catch {
                 throw Abort(.internalServerError)
             }
         }

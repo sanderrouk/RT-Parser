@@ -1,7 +1,7 @@
 import Data
 
 struct BodyParsingContainer {
-    var title = ""
+    var title: String?
     var meta: LawMeta?
     var chapters = [LawChapter]()
 }
