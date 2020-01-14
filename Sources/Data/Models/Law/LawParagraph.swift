@@ -5,7 +5,7 @@ public struct LawParagraph: Content {
     let id: String
     let index: Int?
     let number: Int
-    let title: String
+    let title: String?
     let sections: [LawSection]?
     let content: String?
     let displayableNumber: String
@@ -14,7 +14,7 @@ public struct LawParagraph: Content {
         id: String,
         index: Int?,
         number: Int,
-        title: String,
+        title: String?,
         sections: [LawSection]?,
         content: String?,
         displayableNumber: String

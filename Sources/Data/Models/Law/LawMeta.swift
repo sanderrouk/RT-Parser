@@ -5,7 +5,7 @@ public struct LawMeta: Content {
     let passed: String
     let published: String
     let inForceFrom: String
-    let inForceUntil: String
+    let inForceUntil: String?
     let entryIntoForce: String
     let abbreviation: String
     let textType: String
@@ -16,7 +16,7 @@ public struct LawMeta: Content {
         passed: String,
         published: String,
         inForceFrom: String,
-        inForceUntil: String,
+        inForceUntil: String?,
         entryIntoForce: String,
         abbreviation: String,
         textType: String,

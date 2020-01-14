@@ -21,8 +21,69 @@ jobs:
       run: swift build -v
     - name: Run tests
       run: swift test -v
+
   linux:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install Swift-Docker:18.04 Dependencies
+      run: >-  
+      export DEBIAN_FRONTEND=noninteractive DEBCONF_NONINTERACTIVE_SEEN=true && apt-get -q update && 
+      apt-get -q install -y 
+      libatomic1 
+      libbsd0 
+      libcurl4 
+      libxml2 
+      libxml2-dev 
+      libssl-dev
+      zlib1g-dev 
+      libedit2 
+      libsqlite3-0 
+      libc6-dev 
+      binutils 
+      libgcc-5-dev 
+      libstdc++-5-dev 
+      libpython2.7 
+      tzdata 
+      git 
+      pkg-config 
+      && rm -r /var/lib/apt/lists/*
+
+    - name: Set env variables
+    - run: >-
+      export SWIFT_PLATFORM=ubuntu18.04
+      && export SWIFT_BRANCH=swift-5.0.3-release
+      && export SWIFT_VERSION=swift-5.0.3-RELEASE
+
+    - name: Install Swift 5.0
+    - run: >-
+      SWIFT_URL=https://swift.org/builds/$SWIFT_BRANCH/$(echo "$SWIFT_PLATFORM" | tr -d .)/$SWIFT_VERSION/$SWIFT_VERSION-$SWIFT_PLATFORM.tar.gz 
+      && apt-get update 
+      && apt-get install -y curl 
+      && curl -fSsL $SWIFT_URL -o swift.tar.gz 
+      && curl -fSsL $SWIFT_URL.sig -o swift.tar.gz.sig 
+      && apt-get purge -y curl 
+      && apt-get -y autoremove 
+      && export GNUPGHOME="$(mktemp -d)" 
+      && set -e; 
+          for key in \n
+            A62AE125BBBFBB96A6E042EC925CC1CCED3D1561 \n
+          ; do \n
+            gpg --quiet --keyserver ha.pool.sks-keyservers.net --recv-keys "$key"; \n
+          done \n
+      && gpg --batch --verify --quiet swift.tar.gz.sig swift.tar.gz 
+      && tar -xzf swift.tar.gz --directory / --strip-components=1 
+      && rm -r "$GNUPGHOME" swift.tar.gz.sig swift.tar.gz 
+      && chmod -R o+r /usr/lib/swift
+      && swift --version
+
+    - name: Swift Build
+      run: swift build -v
+    - name: Swift Test
+      run: swift test -v
+
+  docker:
+    runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v1
     - name: Build the Docker image
