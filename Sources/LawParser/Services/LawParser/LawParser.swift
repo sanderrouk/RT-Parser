@@ -153,7 +153,8 @@ final class LawParser: NSObject, XMLParserDelegate {
         case .paragraphNumber where inParagraph:
             paragraphParsingContainer?.number = Int(string)
         case .paragraphTitle where inParagraph:
-            paragraphParsingContainer?.title += string
+            let title = paragraphParsingContainer?.title ?? ""
+            paragraphParsingContainer?.title = title + string
         case .contentText where inParagraph,
              .regularText where inParagraph,
              .displayedText where inParagraph:
@@ -180,7 +181,8 @@ final class LawParser: NSObject, XMLParserDelegate {
         case .inForceFrom where inMeta:
             metaParsingContainer?.inForceFrom += string
         case .inForceUntil where inMeta:
-            metaParsingContainer?.inForceUntil += string
+            let inForceUntil = metaParsingContainer?.inForceUntil ?? ""
+            metaParsingContainer?.inForceUntil = inForceUntil + string
         case .published where inMeta:
             metaParsingContainer?.published += string
         case .passed where inMeta:
@@ -188,7 +190,8 @@ final class LawParser: NSObject, XMLParserDelegate {
 
         // Body
         case .title where inBody:
-            bodyParsingContainer?.title += string
+            let title = bodyParsingContainer?.title ?? ""
+            bodyParsingContainer?.title = title + string
 
         default:
             break
@@ -216,7 +219,7 @@ final class LawParser: NSObject, XMLParserDelegate {
                 id: container.id,
                 number: number,
                 index: container.index,
-                content: container.content,
+                content: container.content.trimmingCharacters(in: .whitespacesAndNewlines),
                 displayableNumber: composeDisplayableNumber(from: number, and: container.index)
             )
 
@@ -234,7 +237,7 @@ final class LawParser: NSObject, XMLParserDelegate {
                 id: container.id,
                 number: container.number,
                 index: container.index,
-                content: container.content,
+                content: container.content.trimmingCharacters(in: .whitespacesAndNewlines),
                 subpoints: container.subpoints.isEmpty ? nil : container.subpoints,
                 displayableNumber: displayableNumber
             )
@@ -253,7 +256,7 @@ final class LawParser: NSObject, XMLParserDelegate {
                 number: number,
                 title: container.title,
                 sections: container.sections.isEmpty ? nil : container.sections,
-                content: container.content,
+                content: container.content?.trimmingCharacters(in: .whitespacesAndNewlines),
                 displayableNumber: composeDisplayableNumber(from: number, and: container.index)
             )
 
@@ -297,10 +300,11 @@ final class LawParser: NSObject, XMLParserDelegate {
 
         case .legislation where inBody:
             let container = bodyParsingContainer!
-            guard let metadata = container.meta else { return }
+            guard let title = container.title,
+                let metadata = container.meta else { return }
 
             let lawBody = LawBody(
-                title: container.title,
+                title: title,
                 meta: metadata,
                 chapters: container.chapters
             )
