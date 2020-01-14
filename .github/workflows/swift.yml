@@ -1,6 +1,12 @@
 name: Swift
 
-on: [push]
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master   
 
 jobs:
   build:
@@ -9,6 +15,8 @@ jobs:
 
     steps:
     - uses: actions/checkout@v1
+    - name: Install Libxml2
+      run: brew install libxml2 && brew link --force libxml2
     - name: Build
       run: swift build -v
     - name: Run tests
