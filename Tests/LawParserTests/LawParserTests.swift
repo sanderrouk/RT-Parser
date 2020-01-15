@@ -13,7 +13,7 @@ final class LawParserTests: XCTestCase {
         ("testParsesSubpoints", testParsesSubpoints)
     ]
 
-    let parser = LawParser()
+    let parser = LawParserImpl()
 
     func testParserParsesLawBody() {
         let law = Laws.artificialLawWithChaptersAndParagraphs

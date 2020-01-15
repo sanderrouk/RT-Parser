@@ -15,7 +15,6 @@ let package = Package(
         .target(name: "Data", dependencies: ["Vapor", "OpenApi", "FluentSQLite"]),
         .target(name: "LawHierarchy", dependencies: ["Vapor", "Data", "FluentSQLite", "Kanna"]),
         .target(name: "LawParser", dependencies: ["Vapor", "Data", "FluentSQLite", "LawHierarchy"]),
-        .testTarget(name: "LawParserTests", dependencies: ["LawParser"]),
         .target(name: "TimerJobs", dependencies: ["Vapor"]),
         .target(
             name: "App",
@@ -31,6 +30,8 @@ let package = Package(
                 "Kanna"
             ]
         ),
-        .target(name: "Run", dependencies: ["App"])
+        .target(name: "Run", dependencies: ["App"]),
+        .target(name: "Testing", dependencies: ["App", "Vapor"]),
+        .testTarget(name: "LawParserTests", dependencies: ["LawParser", "LawHierarchy", "Testing"])
     ]
 )

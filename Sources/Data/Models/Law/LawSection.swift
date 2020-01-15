@@ -1,6 +1,6 @@
 import Vapor
 
-public struct LawSection: Content {
+public struct LawSection: Content, Equatable {
 
     let id: String
     let number: Int?
