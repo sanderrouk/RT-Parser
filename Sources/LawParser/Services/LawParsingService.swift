@@ -10,29 +10,22 @@ public final class LawParsingServiceImpl: LawParsingService {
 
     private let lawParser: LawParser
     private let lawService: LawService
-    private let client: Client
+    private let networkingService: NetworkingService
 
     init(
         lawParser: LawParser,
         lawService: LawService,
-        client: Client
+        networkingService: NetworkingService
     ) {
         self.lawParser = lawParser
         self.lawService = lawService
-        self.client = client
-    }
-
-    private func fetchXml(from url: String) -> EventLoopFuture<Data> {
-        return client.get("\(url).xml").map { response in
-            guard let data = response.http.body.data else { throw Abort(.serviceUnavailable) }
-            return data
-        }
+        self.networkingService = networkingService
     }
 
     public func parseBy(abbreviation: String) -> EventLoopFuture<LawBody> {
         let futureLaw = lawService.findLaw(by: abbreviation)
         let futureData = futureLaw.flatMap { [unowned self] law in
-            self.fetchXml(from: law.url)
+            self.networkingService.get("\(law.url).xml")
         }
 
         return futureData.map { [unowned self] data in
@@ -49,9 +42,13 @@ extension LawParsingServiceImpl: ServiceType {
     public static var serviceSupports: [Any.Type] = [LawParsingService.self]
 
     public static func makeService(for container: Container) throws -> Self {
-        let parser = LawParser()
+        let parser = LawParserImpl()
         let lawService = try container.make(LawService.self)
-        let client = try container.make(Client.self)
-        return .init(lawParser: parser, lawService: lawService, client: client)
+        let networkingService = try container.make(NetworkingService.self)
+        return .init(
+            lawParser: parser,
+            lawService: lawService,
+            networkingService: networkingService
+        )
     }
 }

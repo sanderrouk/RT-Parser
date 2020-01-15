@@ -1,6 +1,6 @@
 import Vapor
 
-public struct LawMeta: Content {
+public struct LawMeta: Content, Equatable {
 
     let passed: String
     let published: String

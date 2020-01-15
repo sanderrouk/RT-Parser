@@ -1,7 +1,11 @@
 import Data
 import Foundation
 
-final class LawParser: NSObject, XMLParserDelegate {
+protocol LawParser {
+    func parse(rawXml: Data) throws -> LawBody
+}
+
+final class LawParserImpl: NSObject, LawParser, XMLParserDelegate {
 
     enum Error: Swift.Error {
         case malformedXml

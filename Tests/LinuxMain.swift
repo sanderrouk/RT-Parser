@@ -4,8 +4,8 @@ import XCTest
 @testable import LawParserTests
 
 XCTMain([
-    // AppTests
-    testCase(LawParserTests.allTests)
+    testCase(LawParserTests.allTests),
+    testCase(LawParsingServiceTests.allTests)
 ])
 
 #endif

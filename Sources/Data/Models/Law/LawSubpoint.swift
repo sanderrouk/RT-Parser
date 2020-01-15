@@ -1,6 +1,6 @@
 import Vapor
 
-public struct LawSubpoint: Content {
+public struct LawSubpoint: Content, Equatable {
 
     let id: String
     let number: Int
