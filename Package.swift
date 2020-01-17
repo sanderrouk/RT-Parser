@@ -32,6 +32,7 @@ let package = Package(
         ),
         .target(name: "Run", dependencies: ["App"]),
         .target(name: "Testing", dependencies: ["App", "Vapor"]),
-        .testTarget(name: "LawParserTests", dependencies: ["LawParser", "LawHierarchy", "Testing"])
+        .testTarget(name: "LawParserTests", dependencies: ["LawParser", "LawHierarchy", "Testing"]),
+        .testTarget(name: "LawHierarchyTests", dependencies: ["LawHierarchy", "Testing"])
     ]
 )

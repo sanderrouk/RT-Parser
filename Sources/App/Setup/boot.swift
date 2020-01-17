@@ -4,6 +4,12 @@ import Vapor
 
 /// Called after your application has initialized.
 public func boot(_ app: Application) throws {
+    if app.environment != .testing {
+        try runTimerJobs(in: app)
+    }
+}
+
+private func runTimerJobs(in app: Application) throws {
     let lawService = try app.make(LawService.self)
     let timerJobService = try app.make(TimerJobService.self)
 

@@ -13,48 +13,34 @@ final class LawParsingServiceTests: XCTestCase {
         ("testParseByAbbreviationSucceeds", testParseByAbbreviationSucceeds)
     ]
 
-    var app: Application!
     fileprivate var lawService: LawServiceStub!
     fileprivate var lawParser: LawParserStub!
-    fileprivate var networkingService: NetworkingServiceStub!
+    fileprivate var networkClient: NetworkClientStub!
 
     var lawParsingService: LawParsingService!
 
     override func setUp() {
-        try! Application.reset()
-        app = try! Application.testable()
-        lawService = LawServiceStub(application: app)
+        lawService = LawServiceStub()
         lawParser = LawParserStub()
-        networkingService = NetworkingServiceStub(application: app)
+        networkClient = NetworkClientStub()
         lawParsingService = LawParsingServiceImpl(
             lawParser: lawParser,
             lawService: lawService,
-            networkingService: networkingService
+            networkClient: networkClient
         )
     }
 
     override func tearDown() {
         lawService = nil
         lawParser = nil
-        networkingService = nil
+        networkClient = nil
         lawParsingService = nil
-        try? app.syncShutdownGracefully()
-        app = nil
+
     }
 
     func testParseByAbbreviationFails_lawNotFound() {
         let future = lawParsingService.parseBy(abbreviation: "law")
-        let expectation = self.expectation(description: "Awaiting for law fetch")
-        future.catch {
-            if let error = $0 as? AbortError {
-                XCTAssertEqual(error.status, .notFound)
-                expectation.fulfill()
-            } else {
-                XCTFail("Received incorrect failure")
-            }
-        }
-
-        waitForExpectations(timeout: 10)
+        XCTAssertThrowsAbortError(withStatus: .notFound, try future.wait())
     }
 
     func testParseByAbbreviationFails_networkFetchFails() {
@@ -63,18 +49,7 @@ final class LawParsingServiceTests: XCTestCase {
         lawService.law = Law(title: "Law", url: urlString, abbreviation: "abr", body: nil)
 
         let future = lawParsingService.parseBy(abbreviation: "law")
-        let expectation = self.expectation(description: "Awaiting for fail")
-        future.catch {
-            if let error = $0 as? AbortError {
-                XCTAssertEqual(error.status, .serviceUnavailable)
-                expectation.fulfill()
-                XCTAssertEqual(url, self.networkingService.url?.convertToURL())
-            } else {
-                XCTFail("Received incorrect failure")
-            }
-        }
-
-        waitForExpectations(timeout: 10)
+        XCTAssertThrowsAbortError(withStatus: .serviceUnavailable, try future.wait())
     }
 
     func testParseByAbbreviationFails_lawParsingFails() {
@@ -82,45 +57,27 @@ final class LawParsingServiceTests: XCTestCase {
         let url = URL(string: "\(urlString).xml")!
         lawService.law = Law(title: "Law", url: urlString, abbreviation: "abr", body: nil)
         let data = "StringData".data(using: .utf8)!
-        networkingService.response = data
+        networkClient.response = data
 
         let future = lawParsingService.parseBy(abbreviation: "law")
-        let expectation = self.expectation(description: "Awaiting for fail")
-        future.catch {
-            if let error = $0 as? AbortError {
-                XCTAssertEqual(error.status, .internalServerError)
-                expectation.fulfill()
-                XCTAssertEqual(url, self.networkingService.url?.convertToURL())
-                XCTAssertEqual(data, self.lawParser.data)
-            } else {
-                XCTFail("Received incorrect failure")
-            }
-        }
-
-        waitForExpectations(timeout: 10)
+        XCTAssertThrowsAbortError(withStatus: .internalServerError, try future.wait())
     }
 
     func testParseByAbbreviationSucceeds() {
         let urlString = "https://someUrl"
         let url = URL(string: "\(urlString).xml")!
         lawService.law = Law(title: "Law", url: urlString, abbreviation: "abr", body: nil)
-
         let data = "StringData".data(using: .utf8)!
-        networkingService.response = data
-
+        networkClient.response = data
         lawParser.lawBody = lawBody
 
         let future = lawParsingService.parseBy(abbreviation: "law")
-        let expectation = self.expectation(description: "Awaiting for success")
+        XCTAssertNoThrow(try future.wait())
+        let body = try! future.wait()
 
-        _ = future.do({
-            XCTAssertEqual(url, self.networkingService.url?.convertToURL())
-            XCTAssertEqual(data, self.lawParser.data)
-            XCTAssertEqual($0, lawBody)
-            expectation.fulfill()
-        })
-
-        waitForExpectations(timeout: 10)
+        XCTAssertEqual(url, self.networkClient.url?.convertToURL())
+        XCTAssertEqual(data, self.lawParser.data)
+        XCTAssertEqual(body, lawBody)
     }
 }
 
@@ -142,46 +99,38 @@ private final class LawServiceStub: LawService {
     var law: Law?
     var updatedCount = 0
 
-    private weak var application: Application!
-
-    init(application: Application) {
-        self.application = application
-    }
+    private let eventLoop = EmbeddedEventLoop()
 
     func findLaws() -> EventLoopFuture<[Law]> {
-        return application.eventLoop.newSucceededFuture(result: laws ?? [])
+        return eventLoop.newSucceededFuture(result: laws ?? [])
     }
 
     func updateLaws() -> EventLoopFuture<Void> {
         updatedCount += 1
-        return application.eventLoop.newSucceededFuture(result: ())
+        return eventLoop.newSucceededFuture(result: ())
     }
 
     func findLaw(by abbreviation: String) -> EventLoopFuture<Law> {
         if law == nil {
-            return application.eventLoop.newFailedFuture(error: Abort(.notFound))
+            return eventLoop.newFailedFuture(error: Abort(.notFound))
         }
-        return application.eventLoop.newSucceededFuture(result: law!)
+        return eventLoop.newSucceededFuture(result: law!)
     }
 }
 
-private final class NetworkingServiceStub: NetworkingService {
+private final class NetworkClientStub: NetworkClient {
 
     var url: URLRepresentable?
     var response: Data?
 
-    private weak var application: Application!
-
-    init(application: Application) {
-        self.application = application
-    }
+    private let eventLoop = EmbeddedEventLoop()
 
     func get(_ urlRepresentable: URLRepresentable) -> EventLoopFuture<Data> {
         url = urlRepresentable
         if let response = response {
-            return application.eventLoop.newSucceededFuture(result: response)
+            return eventLoop.newSucceededFuture(result: response)
         }
 
-        return application.eventLoop.newFailedFuture(error: Abort(.serviceUnavailable))
+        return eventLoop.newFailedFuture(error: Abort(.serviceUnavailable))
     }
 }

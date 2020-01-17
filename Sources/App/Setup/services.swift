@@ -9,5 +9,5 @@ public func setupServices(services: inout Services, env: Environment) throws {
     services.register(LawUrlAndAbbreviationProviderImpl.self)
     services.register(TimerJobServiceImpl.self)
     services.register(LawParsingServiceImpl.self)
-    services.register(NetworkingServiceImplementation.self)
+    services.register(NetworkClientImplementation.self)
 }
