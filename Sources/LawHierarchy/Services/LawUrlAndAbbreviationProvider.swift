@@ -10,21 +10,15 @@ public protocol LawUrlAndAbbreviationProvider: Service {
 public final class LawUrlAndAbbreviationProviderImpl: LawUrlAndAbbreviationProvider {
 
     private let rtSourceUrl = "https://www.riigiteataja.ee/lyhendid.html"
-    private let client: Client
+    private let networkClient: NetworkClient
 
-    internal init(client: Client) {
-        self.client = client
+    internal init(client: NetworkClient) {
+        self.networkClient = client
     }
 
     public func fetchLaws() -> EventLoopFuture<[Law]> {
-        return fetchHtml().map { [unowned self] data in
+        return networkClient.get(rtSourceUrl).map { [unowned self] data in
             try self.parseHtmlToLaws(rawHtml: data)
-        }
-    }
-
-    private func fetchHtml() -> EventLoopFuture<Data> {
-        return client.get(rtSourceUrl).map { response in
-            response.http.body.data!
         }
     }
 
@@ -63,7 +57,7 @@ extension LawUrlAndAbbreviationProviderImpl: ServiceType {
     public static let serviceSupports: [Any.Type] = [LawUrlAndAbbreviationProvider.self]
 
     public static func makeService(for container: Container) throws -> Self {
-        let client = try container.client()
+        let client = try container.make(NetworkClient.self)
         return .init(client: client)
     }
 }

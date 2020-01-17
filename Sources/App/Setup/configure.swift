@@ -52,5 +52,4 @@ public func configure(_ config: inout Config, _ env: inout Environment, _ servic
 
     /// Set up services
     try setupServices(services: &services, env: env)
-
 }

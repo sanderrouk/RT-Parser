@@ -1,10 +1,10 @@
 import Vapor
 
-public protocol NetworkingService: Service {
+public protocol NetworkClient: Service {
     func get(_ urlRepresentable: URLRepresentable) -> EventLoopFuture<Data>
 }
 
-public final class NetworkingServiceImplementation: NetworkingService {
+public final class NetworkClientImplementation: NetworkClient {
 
     private let client: Client
 
@@ -21,8 +21,8 @@ public final class NetworkingServiceImplementation: NetworkingService {
     }
 }
 
-extension NetworkingServiceImplementation: ServiceType {
-    public static var serviceSupports: [Any.Type] = [NetworkingService.self]
+extension NetworkClientImplementation: ServiceType {
+    public static var serviceSupports: [Any.Type] = [NetworkClient.self]
 
     public static func makeService(for container: Container) throws -> Self {
         let client = try container.make(Client.self)

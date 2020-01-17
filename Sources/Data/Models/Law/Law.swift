@@ -33,3 +33,13 @@ extension Law: Migration {
         }
     }
 }
+
+extension Law: Equatable {
+    public static func == (lhs: Law, rhs: Law) -> Bool {
+        return lhs.id == rhs.id
+            && lhs.title == rhs.title
+            && lhs.url == rhs.url
+            && lhs.abbreviation == rhs.abbreviation
+            && lhs.body == rhs.body
+    }
+}
