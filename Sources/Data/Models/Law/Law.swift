@@ -1,4 +1,5 @@
 import FluentSQLite
+import OpenApi
 import Vapor
 
 public final class Law: SQLiteStringModel, Content {
@@ -41,5 +42,18 @@ extension Law: Equatable {
             && lhs.url == rhs.url
             && lhs.abbreviation == rhs.abbreviation
             && lhs.body == rhs.body
+    }
+}
+
+extension Law: Documentable {
+    public static func defineDocumentation() {
+        OpenApi.defineObject(object:
+            Law(
+                title: "Advokatuuriseadus",
+                url: "https://www.riigiteataja.ee/akt/119032019051",
+                abbreviation: "AdvS",
+                body: nil
+            )
+        )
     }
 }
