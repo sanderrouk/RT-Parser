@@ -29,15 +29,19 @@ public final class OpenApi {
 
     private static func initializeApiBuilder() -> OpenAPIBuilder {
         return OpenAPIBuilder(
-            title: "Example API",
-            version: "1.0.0",
-            description: "This is an open api for the Example service.",
-            contact: APIContact(name: "Sander Rõuk", email: "sander@rouk.io", url: URL(string: "https://rouk.io")),
-            license: APILicense(name: "MIT", url: URL(string: "https://opensource.org/licenses/MIT")),
-            authorizations: [
-                .basic(description: "Basic auth is used for the `Login` endpoint."),
-                .jwt(description: "Get the bearer token using `Login` endpoint. The Token is not a JWT like the docs state, that is a bug.")
-            ]
+            title: "Riigiteataja Parser API",
+            version: "0.1.0",
+            description: "Riigiteataja parser (RT-Parser) is a simple API which can be used as an intermediary between your app or service and the Estonian legislative portal, Riigiteatja. What RT-Parser does is very simple. It takes the XML of a legislative act provided by Riigiteataja and converts it to JSON. The internal cache of the service is updated on 12 hour interwals. The project's GitHub and source code can be found here: https://github.com/sanderrouk/RT-Parser",
+            contact: APIContact(
+                name: "Rouk OÜ",
+                email: nil,
+                url: URL(string: "https://github.com/sanderrouk/RT-Parser")
+            ),
+            license: APILicense(
+                name: "MIT",
+                url: URL(string: "https://opensource.org/licenses/MIT")
+            ),
+            authorizations: [.anonymous]
         )
     }
 
