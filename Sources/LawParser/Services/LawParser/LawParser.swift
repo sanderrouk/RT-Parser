@@ -264,7 +264,12 @@ final class LawParserImpl: NSObject, LawParser, XMLParserDelegate {
                 displayableNumber: composeDisplayableNumber(from: number, and: container.index)
             )
 
-            chapterParsingContainer?.paragraphs.append(paragraph)
+            if chapterParsingContainer != nil {
+                chapterParsingContainer?.paragraphs.append(paragraph)
+            } else {
+                bodyParsingContainer?.chapterlessParagraphs.append(paragraph)
+            }
+
             paragraphParsingContainer = nil
 
         // Chapter
@@ -310,7 +315,8 @@ final class LawParserImpl: NSObject, LawParser, XMLParserDelegate {
             let lawBody = LawBody(
                 title: title,
                 meta: metadata,
-                chapters: container.chapters
+                chapters: container.chapters.isEmpty ? nil : container.chapters,
+                chapterlessParagraphs: container.chapterlessParagraphs.isEmpty ? nil : container.chapterlessParagraphs
             )
 
             legislation = lawBody

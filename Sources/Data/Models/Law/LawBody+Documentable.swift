@@ -81,7 +81,8 @@ extension LawBody: Documentable {
     fileprivate static let lawBody = LawBody(
         title: "Law 1",
         meta: LawMeta.lawMeta,
-        chapters: [LawChapter.lawChapter]
+        chapters: [LawChapter.lawChapter],
+        chapterlessParagraphs: [LawParagraph.lawParagraph]
     )
 
     public static func defineDocumentation() {
