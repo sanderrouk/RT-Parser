@@ -167,7 +167,7 @@ final class LawParserImpl: NSObject, LawParser, XMLParserDelegate {
 
         // Chapter
         case .chapterNumber where inChapter:
-            chapterParsingContainer?.number = Int(string)
+            chapterParsingContainer?.number = Int(string) ?? convertToIntFrom(romanNumeral: string)
         case .chapterTitle where inChapter:
             chapterParsingContainer?.title += string
 
@@ -387,5 +387,37 @@ final class LawParserImpl: NSObject, LawParser, XMLParserDelegate {
             .replacingOccurrences(of: "7", with: Superscripts.seven.rawValue)
             .replacingOccurrences(of: "8", with: Superscripts.eight.rawValue)
             .replacingOccurrences(of: "9", with: Superscripts.nine.rawValue)
+    }
+
+    private func convertToIntFrom(romanNumeral: String) -> Int? {
+        guard romanNumeral.range(of: "^(?=[MDCLXVI])M*(C[MD]|D?C{0,3})(X[CL]|L?X{0,3})(I[XV]|V?I{0,3})$", options: .regularExpression) != nil else {
+            return nil
+        }
+        var result = 0
+        var maxValue = 0
+        romanNumeral.uppercased().reversed().forEach {
+            let value: Int
+            switch $0 {
+            case "M":
+                value = 1000
+            case "D":
+                value = 500
+            case "C":
+                value = 100
+            case "L":
+                value = 50
+            case "X":
+                value = 10
+            case "V":
+                value = 5
+            case "I":
+                value = 1
+            default:
+                value = 0
+            }
+            maxValue = max(value, maxValue)
+            result += (value == maxValue ? value : -value)
+        }
+        return result
     }
 }

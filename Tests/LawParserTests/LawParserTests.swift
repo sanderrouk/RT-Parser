@@ -107,6 +107,13 @@ final class LawParserTests: XCTestCase {
         XCTAssertEqual(lawWithTwoChapters.chapters![1].number, 2)
         XCTAssertEqual(lawWithTwoChapters.chapters![1].title, "Teine peatükk")
         XCTAssertEqual(lawWithTwoChapters.chapters![1].displayableNumber, "2")
+
+        let lawWithRomanNumerals = try! parser.parse(rawXml: Laws.lawWithRomanNumeralChapterNumber)
+        XCTAssertEqual(lawWithRomanNumerals.chapters?.count, 2)
+        XCTAssertEqual(lawWithRomanNumerals.chapters!.first!.id, "ptk1")
+        XCTAssertEqual(lawWithRomanNumerals.chapters!.first!.number, 1)
+        XCTAssertEqual(lawWithRomanNumerals.chapters!.first!.title, "ÜLDSÄTTED")
+        XCTAssertEqual(lawWithRomanNumerals.chapters!.first!.displayableNumber, "1")
     }
 
     func testParsesParagraphs() {
