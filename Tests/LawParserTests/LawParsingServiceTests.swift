@@ -35,7 +35,6 @@ final class LawParsingServiceTests: XCTestCase {
         lawParser = nil
         networkClient = nil
         lawParsingService = nil
-
     }
 
     func testParseByAbbreviationFails_lawNotFound() {
@@ -50,6 +49,7 @@ final class LawParsingServiceTests: XCTestCase {
 
         let future = lawParsingService.parseBy(abbreviation: "law")
         XCTAssertThrowsAbortError(withStatus: .serviceUnavailable, try future.wait())
+        XCTAssertEqual(url, networkClient.url?.convertToURL())
     }
 
     func testParseByAbbreviationFails_lawParsingFails() {
@@ -61,6 +61,7 @@ final class LawParsingServiceTests: XCTestCase {
 
         let future = lawParsingService.parseBy(abbreviation: "law")
         XCTAssertThrowsAbortError(withStatus: .internalServerError, try future.wait())
+        XCTAssertEqual(url, networkClient.url?.convertToURL())
     }
 
     func testParseByAbbreviationSucceeds() {

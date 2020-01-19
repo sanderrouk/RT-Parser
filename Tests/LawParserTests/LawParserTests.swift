@@ -19,8 +19,31 @@ final class LawParserTests: XCTestCase {
         let law = Laws.artificialLawWithChaptersAndParagraphs
         XCTAssertNoThrow(try parser.parse(rawXml: law))
         let lawBody = try! parser.parse(rawXml: law)
-        XCTAssertEqual(lawBody.chapters.count, 1)
+        XCTAssertEqual(lawBody.chapters?.count, 1)
         XCTAssertEqual(lawBody.title, "Pühade ja tähtpäevade seadus")
+
+        let law2 = Laws.lawWithOnlyChapterlessParagraphs
+        XCTAssertNoThrow(try parser.parse(rawXml: law2))
+        let lawBody2 = try! parser.parse(rawXml: law2)
+        XCTAssertEqual(lawBody2.chapters, nil)
+        XCTAssertEqual(lawBody2.chapterlessParagraphs?.count, 7)
+        XCTAssertEqual(lawBody2.title, "Pühade ja tähtpäevade seadus")
+
+        let chapterlessParagraph = lawBody2.chapterlessParagraphs![0]
+        XCTAssertEqual(chapterlessParagraph.id, "para1")
+        XCTAssertEqual(chapterlessParagraph.index, nil)
+        XCTAssertEqual(chapterlessParagraph.number, 1)
+        XCTAssertEqual(chapterlessParagraph.title, "Rahvuspüha")
+        XCTAssertEqual(chapterlessParagraph.sections?.count, 1)
+        XCTAssertEqual(chapterlessParagraph.content, nil)
+        XCTAssertEqual(chapterlessParagraph.displayableNumber, "1")
+
+        let law3 = Laws.lawWithChaptersAndChapterlessParagraphs
+        XCTAssertNoThrow(try parser.parse(rawXml: law3))
+        let lawBody3 = try! parser.parse(rawXml: law3)
+        XCTAssertEqual(lawBody3.chapters?.count, 1)
+        XCTAssertEqual(lawBody3.chapterlessParagraphs?.count, 2)
+        XCTAssertEqual(lawBody3.title, "Pühade ja tähtpäevade seadus")
     }
 
     func testParsingLawFails_missingTitleOrMissingMeta() {
@@ -62,39 +85,39 @@ final class LawParserTests: XCTestCase {
 
     func testParsesChapters() {
         let lawWithZeroChapters = try! parser.parse(rawXml: Laws.lawWithZeroChapters)
-        XCTAssertEqual(lawWithZeroChapters.chapters.count, 0)
+        XCTAssertEqual(lawWithZeroChapters.chapters, nil)
 
         let lawWithOneChapter = try! parser.parse(rawXml: Laws.artificialLawWithChaptersAndParagraphs)
-        XCTAssertEqual(lawWithOneChapter.chapters.count, 1)
+        XCTAssertEqual(lawWithOneChapter.chapters?.count, 1)
 
-        XCTAssertEqual(lawWithOneChapter.chapters.first!.id, "ptk1")
-        XCTAssertEqual(lawWithOneChapter.chapters.first!.number, 1)
-        XCTAssertEqual(lawWithOneChapter.chapters.first!.title, "Esimene peatükk")
-        XCTAssertEqual(lawWithOneChapter.chapters.first!.displayableNumber, "1")
+        XCTAssertEqual(lawWithOneChapter.chapters!.first!.id, "ptk1")
+        XCTAssertEqual(lawWithOneChapter.chapters!.first!.number, 1)
+        XCTAssertEqual(lawWithOneChapter.chapters!.first!.title, "Esimene peatükk")
+        XCTAssertEqual(lawWithOneChapter.chapters!.first!.displayableNumber, "1")
 
         let lawWithTwoChapters = try! parser.parse(rawXml: Laws.lawWithTwoChapters)
-        XCTAssertEqual(lawWithTwoChapters.chapters.count, 2)
+        XCTAssertEqual(lawWithTwoChapters.chapters?.count, 2)
 
-        XCTAssertEqual(lawWithTwoChapters.chapters.first!.id, "ptk1")
-        XCTAssertEqual(lawWithTwoChapters.chapters.first!.number, 1)
-        XCTAssertEqual(lawWithTwoChapters.chapters.first!.title, "Esimene peatükk")
-        XCTAssertEqual(lawWithTwoChapters.chapters.first!.displayableNumber, "1")
+        XCTAssertEqual(lawWithTwoChapters.chapters!.first!.id, "ptk1")
+        XCTAssertEqual(lawWithTwoChapters.chapters!.first!.number, 1)
+        XCTAssertEqual(lawWithTwoChapters.chapters!.first!.title, "Esimene peatükk")
+        XCTAssertEqual(lawWithTwoChapters.chapters!.first!.displayableNumber, "1")
 
-        XCTAssertEqual(lawWithTwoChapters.chapters[1].id, "ptk2")
-        XCTAssertEqual(lawWithTwoChapters.chapters[1].number, 2)
-        XCTAssertEqual(lawWithTwoChapters.chapters[1].title, "Teine peatükk")
-        XCTAssertEqual(lawWithTwoChapters.chapters[1].displayableNumber, "2")
+        XCTAssertEqual(lawWithTwoChapters.chapters![1].id, "ptk2")
+        XCTAssertEqual(lawWithTwoChapters.chapters![1].number, 2)
+        XCTAssertEqual(lawWithTwoChapters.chapters![1].title, "Teine peatükk")
+        XCTAssertEqual(lawWithTwoChapters.chapters![1].displayableNumber, "2")
     }
 
     func testParsesParagraphs() {
         let lawWithZeroParagaphs = try! parser.parse(rawXml: Laws.lawWithTwoChapters)
-        XCTAssertEqual(lawWithZeroParagaphs.chapters[0].paragraphs.count, 0)
-        XCTAssertEqual(lawWithZeroParagaphs.chapters[1].paragraphs.count, 0)
+        XCTAssertEqual(lawWithZeroParagaphs.chapters![0].paragraphs.count, 0)
+        XCTAssertEqual(lawWithZeroParagaphs.chapters![1].paragraphs.count, 0)
 
         let lawWithOneParagraph = try! parser.parse(rawXml: Laws.lawWithOneParagraph)
-        XCTAssertEqual(lawWithOneParagraph.chapters.first!.paragraphs.count, 1)
+        XCTAssertEqual(lawWithOneParagraph.chapters!.first!.paragraphs.count, 1)
 
-        let paragraph = lawWithOneParagraph.chapters.first!.paragraphs.first!
+        let paragraph = lawWithOneParagraph.chapters!.first!.paragraphs.first!
         XCTAssertEqual(paragraph.id, "para1")
         XCTAssertEqual(paragraph.index, nil)
         XCTAssertEqual(paragraph.number, 1)
@@ -104,9 +127,9 @@ final class LawParserTests: XCTestCase {
         XCTAssertEqual(paragraph.displayableNumber, "1")
 
         let lawWithSevenDifferentParagraphs = try! parser.parse(rawXml: Laws.artificialLawWithChaptersAndParagraphs)
-        XCTAssertEqual(lawWithSevenDifferentParagraphs.chapters.first!.paragraphs.count, 7)
+        XCTAssertEqual(lawWithSevenDifferentParagraphs.chapters!.first!.paragraphs.count, 7)
 
-        let paragraphs = lawWithSevenDifferentParagraphs.chapters.first!.paragraphs
+        let paragraphs = lawWithSevenDifferentParagraphs.chapters!.first!.paragraphs
 
         let paragraph1 = paragraphs[0]
         XCTAssertEqual(paragraph1.id, "para1")
@@ -140,11 +163,11 @@ final class LawParserTests: XCTestCase {
 
     func testParsesSections() {
         let lawWithZeroSections = try! parser.parse(rawXml: Laws.lawWithOneParagraphAndZeroSections)
-        let emptyParagraph = lawWithZeroSections.chapters[0].paragraphs[0]
+        let emptyParagraph = lawWithZeroSections.chapters![0].paragraphs[0]
         XCTAssertTrue(emptyParagraph.sections == nil)
 
         let lawWithAllSectionCases = try! parser.parse(rawXml: Laws.lawWithAllSectionCases)
-        let paragraph = lawWithAllSectionCases.chapters[0].paragraphs[0]
+        let paragraph = lawWithAllSectionCases.chapters![0].paragraphs[0]
         XCTAssertEqual(paragraph.sections?.count, 3)
 
         let section1 = paragraph.sections![0]
@@ -174,12 +197,12 @@ final class LawParserTests: XCTestCase {
 
     func testParsesSubpoints() {
         let lawWithZeroSubpoints = try! parser.parse(rawXml: Laws.lawWithOneParagraph)
-        let emptySection = lawWithZeroSubpoints.chapters[0].paragraphs[0].sections![0]
+        let emptySection = lawWithZeroSubpoints.chapters![0].paragraphs[0].sections![0]
         XCTAssertTrue(emptySection.subpoints == nil)
 
         let lawWithAllSubpointCases = try! parser.parse(rawXml: Laws.artificialLawWithChaptersAndParagraphs)
 
-        let section = lawWithAllSubpointCases.chapters[0].paragraphs[1].sections![0]
+        let section = lawWithAllSubpointCases.chapters![0].paragraphs[1].sections![0]
         XCTAssertEqual(section.subpoints?.count, 11)
 
         let subpoint = section.subpoints![0]

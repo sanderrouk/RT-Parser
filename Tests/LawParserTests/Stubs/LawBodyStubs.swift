@@ -77,5 +77,13 @@ let lawMeta = LawMeta(
 let lawBody = LawBody(
     title: "Law 1",
     meta: lawMeta,
-    chapters: [lawChapter, lawChapter2]
+    chapters: [lawChapter, lawChapter2],
+    chapterlessParagraphs: nil
+)
+
+let lawBodyWithChapterlessParagraphs = LawBody(
+    title: "Law 1",
+    meta: lawMeta,
+    chapters: [lawChapter, lawChapter2],
+    chapterlessParagraphs: [lawParagraph, lawParagraph2]
 )
