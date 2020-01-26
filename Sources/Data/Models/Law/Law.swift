@@ -8,13 +8,13 @@ public final class Law: SQLiteStringModel, Content {
     public var title: String
     public var url: String
     public var abbreviation: String
-    public var body: LawBody?
+    public var body: Data?
 
     public init(
         title: String,
         url: String,
         abbreviation: String,
-        body: LawBody?
+        body: Data?
     ) {
         self.id = abbreviation
         self.title = title
@@ -31,6 +31,7 @@ extension Law: Migration {
             builder.field(for: \.title, type: .text)
             builder.field(for: \.url, type: .text)
             builder.field(for: \.abbreviation, type: .text, .unique())
+            builder.field(for: \.body, type: .blob)
         }
     }
 }

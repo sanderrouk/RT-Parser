@@ -1,4 +1,3 @@
-import LawHierarchy
 import TimerJobs
 import Vapor
 
@@ -10,10 +9,12 @@ public func boot(_ app: Application) throws {
 }
 
 private func runTimerJobs(in app: Application) throws {
-    let lawService = try app.make(LawService.self)
     let timerJobService = try app.make(TimerJobService.self)
+    let dataSyncJob = try app.make(DataSyncJob.self)
 
-    timerJobService.startJob(onEventLoop: app.eventLoop, interval: .hours(12)) { _ in
-        lawService.updateLaws()
-    }
+    timerJobService.startJob(
+        onEventLoop: app.eventLoop,
+        interval: .hours(12),
+        task: dataSyncJob.job
+    )
 }

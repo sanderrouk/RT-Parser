@@ -99,6 +99,7 @@ private final class LawServiceStub: LawService {
     var laws: [Law]?
     var law: Law?
     var updatedCount = 0
+    var bodyUpdatedCount = 0
 
     private let eventLoop = EmbeddedEventLoop()
 
@@ -106,9 +107,9 @@ private final class LawServiceStub: LawService {
         return eventLoop.newSucceededFuture(result: laws ?? [])
     }
 
-    func updateLaws() -> EventLoopFuture<Void> {
+    func updateLaws() -> EventLoopFuture<[Law]> {
         updatedCount += 1
-        return eventLoop.newSucceededFuture(result: ())
+        return eventLoop.newSucceededFuture(result: laws ?? [])
     }
 
     func findLaw(by abbreviation: String) -> EventLoopFuture<Law> {
@@ -116,6 +117,11 @@ private final class LawServiceStub: LawService {
             return eventLoop.newFailedFuture(error: Abort(.notFound))
         }
         return eventLoop.newSucceededFuture(result: law!)
+    }
+
+    func updateLawBodies(for laws: [Law]) -> EventLoopFuture<[Law]> {
+        bodyUpdatedCount += 1
+        return eventLoop.newSucceededFuture(result: self.laws ?? [])
     }
 }
 

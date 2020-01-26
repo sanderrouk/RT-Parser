@@ -11,7 +11,9 @@ public func databases(config: inout DatabasesConfig, env: Environment) throws {
     let sqlite = try SQLiteDatabase(storage: .memory)
 
     // Register the configured SQLite database to the database config.
-    config.enableLogging(on: .sqlite)
+    if env == .development {
+        config.enableLogging(on: .sqlite)
+    }
     config.add(database: sqlite, as: .sqlite)
 }
 
